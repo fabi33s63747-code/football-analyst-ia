@@ -173,9 +173,46 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def main():
-    port = int(os.environ.get("PORT") or 8080)
-    server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
-    print(f"FOOTBALL ANALYST IA  →  http://127.0.0.1:{port}", flush=True)
+    import webbrowser
+
+    import socket
+    hosted = bool(os.environ.get("PORT") and (os.environ.get("RENDER") or os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("FLY_APP_NAME") or os.environ.get("DYNO")))
+    requested = int(os.environ.get("PORT") or 8080)
+    server = None
+    port = requested
+    candidates = (requested,) if os.environ.get("PORT") else (requested, 8081, 8082, 3000, 5000)
+    for candidate in candidates:
+        try:
+            httpd = ThreadingHTTPServer(("0.0.0.0", candidate), Handler)
+            httpd.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            server = httpd
+            port = candidate
+            break
+        except OSError:
+            continue
+    if server is None:
+        print("ERRO: nenhuma porta livre (8080-8082, 3000, 5000).")
+        raise SystemExit(1)
+    url = f"http://127.0.0.1:{port}"
+    lan = "não detectado"
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        lan = s.getsockname()[0]
+        s.close()
+    except Exception:
+        pass
+    print("========================================", flush=True)
+    print("  FOOTBALL ANALYST IA esta pronto", flush=True)
+    print(f"  Computador: {url}", flush=True)
+    print(f"  Celular (mesma Wi-Fi): http://{lan}:{port}", flush=True)
+    print("  Deixe esta janela aberta.", flush=True)
+    print("========================================", flush=True)
+    if not hosted:
+        try:
+            webbrowser.open(url)
+        except Exception:
+            pass
     try:
         server.serve_forever()
     except KeyboardInterrupt:
