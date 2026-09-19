@@ -1,0 +1,5 @@
+# Opcional — o app roda só com a biblioteca padrão do Python 3.10+.
+# Instale estes pacotes se quiser usar o modo Flask ou testes:
+# flask>=3.0
+# requests>=2.31
+# python-dotenv>=1.0
